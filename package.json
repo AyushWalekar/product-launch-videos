@@ -22,6 +22,7 @@
     "@remotion/cli": "4.0.427",
     "@remotion/google-fonts": "4.0.427",
     "@remotion/lambda": "4.0.427",
+    "@remotion/layout-utils": "^4.0.427",
     "@remotion/lottie": "4.0.427",
     "@remotion/paths": "4.0.427",
     "@remotion/player": "4.0.427",
@@ -49,8 +50,8 @@
     "@eslint/js": "9.38.0",
     "@next/eslint-plugin-next": "15.1.6",
     "@remotion/eslint-plugin": "4.0.427",
-    "@types/babel__standalone": "7.1.9",
     "@tailwindcss/postcss": "4.1.1",
+    "@types/babel__standalone": "7.1.9",
     "@types/node": "20.12.14",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
@@ -62,6 +63,7 @@
     "dotenv": "17.3.1",
     "eslint": "9.19.0",
     "eslint-config-next": "15.1.6",
+    "playwright-core": "^1.55.0",
     "postcss": "8.4.47",
     "prettier": "3.8.1",
     "raw-loader": "^4.0.2",
@@ -77,6 +79,11 @@
     "lint": "eslint .",
     "remotion": "remotion studio",
     "render": "remotion render",
-    "deploy": "node deploy.mjs"
+    "deploy": "node deploy.mjs",
+    "demo": "remotion studio src/demo/index.ts",
+    "demo:render": "remotion render src/demo/index.ts",
+    "demo:still": "remotion still src/demo/index.ts",
+    "demo:local": "remotion studio src/demo/local.ts",
+    "render:hq": "remotion render --image-format=png --crf=16 --audio-bitrate=320k"
   }
 }

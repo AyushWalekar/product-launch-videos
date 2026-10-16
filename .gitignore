@@ -37,3 +37,9 @@ next-env.d.ts
 out/
 .env
 build
+# Product-specific demo work: kept locally, never pushed (render via `npm run demo:local`)
+/src/demo/videos/
+/src/demo/LocalRoot.tsx
+/src/demo/local.ts
+/public/demo/
+/.claude/skills/product-demo-video/

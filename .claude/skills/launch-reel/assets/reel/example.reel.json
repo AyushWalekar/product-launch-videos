@@ -1,0 +1,76 @@
+{
+  "key": "F",
+  "assets": "reel/acme",
+  "brand": {
+    "name": "Acme",
+    "logo": "logo.png",
+    "logoRatio": 3.2,
+    "font": "Inter",
+    "ink": "#0f172a",
+    "muted": "#64748b",
+    "primary": "#2563eb",
+    "accent": "#f97316",
+    "gradient": ["#0d9488", "#2563eb"]
+  },
+  "hero": {
+    "pill": "Now in public beta",
+    "headline": "Ship reports your team actually reads",
+    "gradientFrom": 3,
+    "cta": "Start free",
+    "url": "acme.com"
+  },
+  "montage": [
+    { "label": "Collect", "icon": "Inbox", "colors": ["#38bdf8", "#0369a1"] },
+    { "label": "Analyse", "icon": "ChartLine", "colors": ["#2dd4bf", "#0f766e"] },
+    { "label": "Write", "icon": "PenLine", "colors": ["#a78bfa", "#5b21b6"] },
+    { "label": "Share", "icon": "Send", "colors": ["#fb923c", "#c2410c"] }
+  ],
+  "chips": [
+    { "text": "Weekly digest", "icon": "Calendar" },
+    { "text": "Slack sync", "icon": "MessageSquare" },
+    { "text": "Dashboards", "icon": "LayoutDashboard" },
+    { "text": "Alerts", "icon": "Bell" },
+    { "text": "CSV import" },
+    { "text": "Team spaces" },
+    { "text": "Templates" },
+    { "text": "Comments" },
+    { "text": "Version history" },
+    { "text": "API access" }
+  ],
+  "beats": [
+    {
+      "id": "home",
+      "title": ["Everything,", "in one place."],
+      "sub": "Your projects at a glance.",
+      "url": "acme.com/home",
+      "screen": "home.png",
+      "seconds": 3.5,
+      "camera": [[0, 1.15, 720, 380], [100, 1.28, 740, 440]],
+      "cursor": { "path": [[40, 1150, 640], [80, 840, 438]], "clicks": [86] }
+    },
+    {
+      "id": "write",
+      "title": ["Write it.", "Ship it."],
+      "sub": "Drafts that write themselves.",
+      "url": "acme.com/editor",
+      "screen": "editor.png",
+      "seconds": 5.5,
+      "camera": [[0, 1.5, 720, 430], [160, 1.6, 720, 480]],
+      "typing": { "at": 20, "rect": [381, 320, 678, 256], "prefill": "Hi team,\n\n", "text": "Revenue is up 12% this week." },
+      "cursor": { "path": [[70, 900, 700], [88, 1019, 858]], "clicks": [92] },
+      "swaps": [{ "at": 106, "screen": "editor-sent.png" }]
+    },
+    {
+      "id": "insights",
+      "title": ["See what", "changed."],
+      "sub": "Trends, by team and week.",
+      "url": "acme.com/insights",
+      "screen": "insights.png",
+      "seconds": 5,
+      "toast": { "text": "3 new insights", "at": 56 },
+      "pushOut": true
+    }
+  ],
+  "end": { "seconds": 3.5 },
+  "musicVolume": 0.9
+}
