@@ -1,0 +1,93 @@
+{
+ "aspect": "square",
+ "kicker": "Artificial Analysis · score vs cost",
+ "title": "What the last few points cost",
+ "subtitle": "Intelligence Index vs cost per task (log scale), API list prices",
+ "xLabel": "Cost per Intelligence Index task",
+ "yLabel": "Intelligence Index",
+ "xFormat": "usd",
+ "xLog": true,
+ "frontier": true,
+ "points": [
+  {
+   "label": "Sol low",
+   "x": 0.16147357831822573,
+   "y": 34.502924431456
+  },
+  {
+   "label": "Sol medium",
+   "x": 0.3593898648025732,
+   "y": 46.1468797067114
+  },
+  {
+   "label": "Sol high",
+   "x": 0.5909853515780825,
+   "y": 50.2291231936536,
+   "focus": true,
+   "ring": true,
+   "note": "50.2 for 59¢"
+  },
+  {
+   "label": "Sol max",
+   "x": 1.2720632679446995,
+   "y": 54.5087338138148,
+   "showLabel": true,
+   "labelSide": "above"
+  },
+  {
+   "label": "Opus 5.5 high",
+   "x": 3.4646622820973185,
+   "y": 51.6859958227294
+  },
+  {
+   "label": "Opus 5.5 xhigh",
+   "x": 6.047194490848774,
+   "y": 56.9947060170507,
+   "focus": true,
+   "ring": true,
+   "note": "57.0 for $6.05",
+   "labelSide": "below",
+   "noteDx": -40,
+   "noteDy": -44
+  },
+  {
+   "label": "Opus 5.5 max",
+   "x": 10.036409719512749,
+   "y": 58.4060336078904
+  },
+  {
+   "label": "Carbon medium",
+   "x": 6.585776867225546,
+   "y": 57.7087824022788
+  },
+  {
+   "label": "Carbon high",
+   "x": 7.755545745286556,
+   "y": 59.425738829526,
+   "showLabel": true,
+   "labelSide": "above"
+  },
+  {
+   "label": "Argon high",
+   "x": 7.682671372515551,
+   "y": 50.4121935905389
+  },
+  {
+   "label": "Kimi K3.1 Pro",
+   "x": 3.6812002895742055,
+   "y": 46.0026236744189
+  },
+  {
+   "label": "Grok 4.7 xhigh",
+   "x": 7.771539401587139,
+   "y": 35.3350117067196,
+   "showLabel": true,
+   "labelSide": "left"
+  }
+ ],
+ "math": [
+  "$6.05 ÷ $0.591 = 10.2× the cost",
+  "57.0 − 50.2 = [[+6.8 points for 10× the bill]]"
+ ],
+ "source": "Source: Artificial Analysis leaderboard, Nov 3 2026 · API list prices"
+}

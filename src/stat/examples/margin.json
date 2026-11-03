@@ -1,0 +1,69 @@
+{
+ "aspect": "portrait",
+ "kicker": "Artificial Analysis · Terminal-Bench 4.0",
+ "title": "Terminal-Bench 4.0, top five",
+ "subtitle": "Pass rate on 66 tasks, best setting per model. AA Intelligence Index rank below each name",
+ "orientation": "horizontal",
+ "panels": [
+  {
+   "format": "pct",
+   "decimals": 1,
+   "max": 0.75,
+   "bars": [
+    {
+     "label": "Kimi K3.1 Pro",
+     "sub": "#10 on AA index",
+     "value": 0.671717171717172,
+     "lab": "Kimi",
+     "color": "#047AFE",
+     "focus": true
+    },
+    {
+     "label": "Gemini 4 Carbon",
+     "sub": "high · #1",
+     "value": 0.651515151515151,
+     "lab": "Google",
+     "color": "#34A853",
+     "focus": true
+    },
+    {
+     "label": "Claude Sonnet 5.5",
+     "sub": "max · #5",
+     "value": 0.636363636363636,
+     "lab": "Anthropic",
+     "color": "#cc785c",
+     "focus": false
+    },
+    {
+     "label": "GPT-6 Astra",
+     "sub": "xhigh · #3",
+     "value": 0.595959595959596,
+     "lab": "OpenAI",
+     "color": "#1f1f1f",
+     "focus": false
+    },
+    {
+     "label": "Claude Opus 5.5",
+     "sub": "max · #2",
+     "value": 0.595959595959596,
+     "lab": "Anthropic",
+     "color": "#cc785c",
+     "focus": false
+    }
+   ]
+  }
+ ],
+ "annotations": [
+  {
+   "type": "bracket",
+   "from": 0,
+   "to": 1,
+   "text": "2.0 pts\n= 1.3 tasks"
+  }
+ ],
+ "math": [
+  "67.2% − 65.2% = 2.0 pts",
+  "2.0% of 66 tasks = [[1.3 tasks]]"
+ ],
+ "source": "Source: Artificial Analysis leaderboard, Nov 3 2026 · pass@1, 3 runs per task, mini-swe-agent harness · ranks among 44 model families"
+}

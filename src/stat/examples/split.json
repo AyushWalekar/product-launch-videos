@@ -1,0 +1,54 @@
+{
+ "aspect": "square",
+ "kicker": "Artificial Analysis · speed",
+ "title": "Faster tokens, longer wait",
+ "subtitle": "Both at medium reasoning effort",
+ "panels": [
+  {
+   "title": "Output tokens / s",
+   "format": "int",
+   "bars": [
+    {
+     "label": "Gemini 4 Carbon",
+     "sub": "medium",
+     "value": 101.061207057419
+    },
+    {
+     "label": "GPT-6.1 Sol",
+     "sub": "medium",
+     "value": 62.5606897406558
+    }
+   ]
+  },
+  {
+   "title": "End-to-end time",
+   "note": "lower is better",
+   "format": "seconds",
+   "bars": [
+    {
+     "label": "Gemini 4 Carbon",
+     "sub": "medium",
+     "value": 34.065570180637486,
+     "focus": true
+    },
+    {
+     "label": "GPT-6.1 Sol",
+     "sub": "medium",
+     "value": 16.895464176663367
+    }
+   ]
+  }
+ ],
+ "annotations": [
+  {
+   "type": "ring",
+   "bar": 0,
+   "panel": 1
+  }
+ ],
+ "math": [
+  "101 ÷ 63 tokens/s = 1.6× the speed",
+  "34s ÷ 17s = [[2.0× the wait]]"
+ ],
+ "source": "Source: Artificial Analysis leaderboard, Nov 3 2026 · median end-to-end response time on AA's prompts"
+}
