@@ -3,7 +3,8 @@ import { interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { Frame, mathFrames, type Callout } from "./Frame";
 import { PEN_FRAMES, PenStroke, PenText, ringPath } from "./pen";
 import { formatTick, formatValue, type ValueFormat } from "./format";
-import { fonts, labColor, palette as p, type Aspect } from "./theme";
+import { Logo } from "./logo";
+import { fonts, labColor, logoFor, palette as p, type Aspect } from "./theme";
 import { logTicks, niceTicks, useSize } from "./useSize";
 
 export type Series = {
@@ -13,6 +14,8 @@ export type Series = {
   color?: string;
   lab?: string;
   focus?: boolean;
+  /** Logo file in public/logos, or false for none. Default: matched from label, then lab. */
+  logo?: string | false;
 };
 
 export type StatLineProps = {
@@ -70,7 +73,7 @@ export const StatLine: React.FC<StatLineProps> = (props) => {
   const lo = props.log ? yLo : Math.min(yLo, ticks[0]);
   const hi = props.log ? yHi : Math.max(yHi, ticks[ticks.length - 1]);
 
-  const L = 96, R = 210, T = 16, B = 48; // R leaves room for end labels
+  const L = 96, R = 244, T = 16, B = 48; // R leaves room for end labels
   const W = Math.max(1, size.width - L - R), H = Math.max(1, size.height - T - B);
   const X = (i: number) => L + (i / Math.max(1, xs.length - 1)) * W;
   const Y = (v: number) =>
@@ -90,7 +93,9 @@ export const StatLine: React.FC<StatLineProps> = (props) => {
     extrapolateRight: "clamp",
   });
 
+  const heads: { x: number; y: number; src: string; o: number }[] = [];
   return (
+    // end-of-line logos, collected while drawing the series and laid over the SVG
     <Frame {...props} calloutAt={tm.calloutAt} mathAt={tm.mathAt}>
       <div ref={ref} style={{ position: "absolute", inset: 0 }}>
         {size.width > 0 && (
@@ -135,7 +140,7 @@ export const StatLine: React.FC<StatLineProps> = (props) => {
             {props.series.map((s, k) => {
               const lab = props.colors === "lab";
               const strong = s.focus || (!hasFocus && k === 0);
-              const color = hasFocus && !s.focus ? "#B3AC9E" : lab ? s.color ?? labColor(s.lab, p.ink) : strong ? p.ink : p.ink2;
+              const color = hasFocus && !s.focus ? p.muted : lab ? s.color ?? labColor(s.lab, p.ink) : strong ? p.ink : p.ink2;
               const n = Math.floor(t);
               const frac = t - n;
               const pts = s.points.slice(0, n + 1).map(([, y], i) => [X(i), Y(y)]);
@@ -144,14 +149,17 @@ export const StatLine: React.FC<StatLineProps> = (props) => {
               const head = [X(t), Y(headV)];
               const d = [...pts, head].map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
               const width = s.focus || !hasFocus ? 4.5 : 3;
+              const logo = logoFor(s.label, s.lab, s.logo);
+              const lx = head[0] + 16 + (logo ? 34 : 0);
+              if (logo) heads.push({ x: head[0] + 16 + 13, y: head[1] + 14, src: logo, o: strong || !hasFocus ? 1 : 0.5 });
               return (
                 <g key={s.label}>
                   <path d={d} fill="none" stroke={color} strokeWidth={width} strokeLinejoin="round" strokeLinecap="round" />
-                  <circle cx={head[0]} cy={head[1]} r={8} fill={color} stroke={p.paper} strokeWidth={3} />
-                  <text x={head[0] + 16} y={head[1] - 6} fontSize={24} fontWeight={700} fill={color}>
+                  <circle cx={head[0]} cy={head[1]} r={8} fill={color} stroke={p.card} strokeWidth={3} />
+                  <text x={lx} y={head[1] - 6} fontSize={24} fontWeight={700} fill={color}>
                     {formatValue(headV, props.yFormat, props.yDecimals)}
                   </text>
-                  <text x={head[0] + 16} y={head[1] + 22} fontSize={21} fill={p.ink2} opacity={done ? 1 : 0.85}>
+                  <text x={lx} y={head[1] + 22} fontSize={21} fill={p.ink2} opacity={done ? 1 : 0.85}>
                     {s.label}
                   </text>
                 </g>
@@ -162,6 +170,9 @@ export const StatLine: React.FC<StatLineProps> = (props) => {
             </g>
           </svg>
         )}
+        {heads.map((h, k) => (
+          <Logo key={k} src={h.src} x={h.x} y={h.y} size={26} opacity={h.o} />
+        ))}
       </div>
     </Frame>
   );

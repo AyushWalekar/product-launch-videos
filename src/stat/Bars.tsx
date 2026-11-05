@@ -3,7 +3,8 @@ import { interpolateColors, spring, useCurrentFrame, useVideoConfig } from "remo
 import { Frame, mathFrames, type Callout } from "./Frame";
 import { formatValue, type ValueFormat } from "./format";
 import { PEN_FRAMES, PenStroke, PenText, bracketRight, bracketTop, ringPath } from "./pen";
-import { fonts, labColor, palette as p, type Aspect } from "./theme";
+import { Logo } from "./logo";
+import { fonts, labColor, logoFor, palette as p, type Aspect } from "./theme";
 import { useSize } from "./useSize";
 
 export type Bar = {
@@ -15,8 +16,10 @@ export type Bar = {
   display?: string;
   color?: string;
   lab?: string;
-  /** The bars the post is about: drawn in ink, the rest in a light grey. */
+  /** The bars the post is about: drawn in white, the rest in dark grey. */
   focus?: boolean;
+  /** Logo file in public/logos ("claude-color"), or false for none. Default: matched from label, then lab. */
+  logo?: string | false;
 };
 
 export type Panel = {
@@ -45,7 +48,7 @@ export type StatBarsProps = {
   subtitle?: string;
   panels: Panel[];
   orientation?: "auto" | "vertical" | "horizontal";
-  /** "ink" (default): ink focus bars, grey context, vermilion only for the pen. "lab": lab colours. */
+  /** "ink" (default): white focus bars, grey context, the accent only for the pen. "lab": lab colours. */
   colors?: "ink" | "lab";
   annotations?: Annotation[];
   math?: string[];
@@ -57,7 +60,6 @@ export type StatBarsProps = {
 
 const START = 12;
 const GROW = 20;
-const CONTEXT = "#CFC8B9"; // context bars: visible, clearly behind the focus bars
 const ANN_GAP = PEN_FRAMES + 6;
 
 const isHorizontal = (props: StatBarsProps) =>
@@ -115,10 +117,10 @@ function useBars(props: StatBarsProps, panel: Panel, pi: number) {
     let fill: string;
     if (lab) {
       const base = b.color ?? labColor(b.lab);
-      fill = hasFocus && !b.focus ? interpolateColors(emph, [0, 1], [base, p.tint]) : base;
-    } else fill = !hasFocus ? p.ink2 : b.focus ? p.ink : CONTEXT;
+      fill = hasFocus && !b.focus ? interpolateColors(emph, [0, 1], [base, p.context]) : base;
+    } else fill = !hasFocus ? p.ink2 : b.focus ? p.ink : p.context;
     const strong = !hasFocus || b.focus;
-    return { b, grow, fill, ink: strong ? p.ink : p.muted, subInk: strong ? p.ink2 : p.muted };
+    return { b, grow, fill, ink: strong ? p.ink : p.muted, subInk: strong ? p.ink2 : p.muted, logo: logoFor(b.label, b.lab, b.logo), logoOpacity: strong ? 1 : 0.5 };
   });
   const anns = (props.annotations ?? []).map((a, k) => ({ a, at: tm.annAt[k] })).filter((x) => (x.a.panel ?? 0) === pi);
   return { bars, anns, scale: scaler(panel) };
@@ -127,7 +129,7 @@ function useBars(props: StatBarsProps, panel: Panel, pi: number) {
 const PanelTitle: React.FC<{ panel: Panel }> = ({ panel }) =>
   panel.title || panel.note ? (
     <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 16, marginBottom: 20 }}>
-      <div style={{ fontSize: 30, fontWeight: 700, color: p.ink }}>{panel.title}</div>
+      <div style={{ fontSize: 28, fontWeight: 600, letterSpacing: -0.5, color: p.ink }}>{panel.title}</div>
       {panel.note && <div style={{ fontSize: 24, color: p.muted }}>{panel.note}</div>}
     </div>
   ) : null;
@@ -139,7 +141,10 @@ const HorizontalPanel: React.FC<{ props: StatBarsProps; panel: Panel; pi: number
   const font = n > 9 ? 23 : 27;
   const W = size.width, H = size.height;
   const rowH = H / n, thick = Math.min(54, rowH * 0.58);
-  const labelW = W * 0.33, x0 = labelW + 20;
+  const hasLogos = bars.some((x) => x.logo);
+  const logoSize = Math.min(40, rowH * 0.5);
+  const labelW = W * (hasLogos ? 0.3 : 0.33);
+  const x0 = labelW + (hasLogos ? logoSize + 36 : 20);
   const hasBracket = anns.some((x) => x.a.type === "bracket");
   const trackW = (W - x0) * (hasBracket ? 0.56 : 0.76);
   const yc = (i: number) => rowH * (i + 0.5);
@@ -164,14 +169,14 @@ const HorizontalPanel: React.FC<{ props: StatBarsProps; panel: Panel; pi: number
                       {b.sub}
                     </text>
                   )}
-                  <rect x={x0} y={yc(i) - thick / 2} width={w} height={thick} fill={fill} rx={2} />
+                  <rect x={x0} y={yc(i) - thick / 2} width={w} height={thick} fill={fill} rx={6} />
                   <text x={x0 + w + 14} y={yc(i) + font * 0.38} fontSize={font + 3} fontWeight={700} fill={ink} opacity={Math.min(1, grow * 4)} style={{ fontVariantNumeric: "tabular-nums" }}>
                     {valueText(panel, b, grow)}
                   </text>
                 </g>
               );
             })}
-            <line x1={x0} x2={x0} y1={0} y2={H} stroke={p.ink2} strokeWidth={2} />
+            <line x1={x0} x2={x0} y1={0} y2={H} stroke={p.rule} strokeWidth={2} />
             {anns.map(({ a, at }, k) => {
               if (a.type === "ring") {
                 const vw = textW(valueText(panel, bars[a.bar].b, 1), font + 3);
@@ -201,6 +206,10 @@ const HorizontalPanel: React.FC<{ props: StatBarsProps; panel: Panel; pi: number
             })}
           </svg>
         )}
+        {W > 0 &&
+          bars.map(({ logo, logoOpacity, grow }, i) =>
+            logo ? <Logo key={i} src={logo} x={labelW + 18 + logoSize / 2} y={yc(i)} size={logoSize} opacity={logoOpacity * Math.min(1, grow * 3 + 0.4)} /> : null,
+          )}
       </div>
     </div>
   );
@@ -214,7 +223,10 @@ const VerticalPanel: React.FC<{ props: StatBarsProps; panel: Panel; pi: number }
   const nameSize = n > 4 ? 23 : 27;
   const W = size.width, H = size.height;
   const hasBracket = anns.some((x) => x.a.type === "bracket");
-  const labelsH = 100;
+  const hasLogos = bars.some((x) => x.logo);
+  const logoSize = n > 4 ? 40 : 48;
+  const logoH = hasLogos ? logoSize + 16 : 0;
+  const labelsH = 100 + logoH;
   const top = 62 + (hasBracket ? 96 : 0);
   const plotH = Math.max(1, H - top - labelsH);
   const base = top + plotH;
@@ -233,11 +245,11 @@ const VerticalPanel: React.FC<{ props: StatBarsProps; panel: Panel; pi: number }
               const name = wrap(b.label, Math.floor(colW / (nameSize * 0.58)));
               return (
                 <g key={i}>
-                  <rect x={cx(i) - barW / 2} y={base - h} width={barW} height={h} fill={fill} rx={2} />
+                  <rect x={cx(i) - barW / 2} y={base - h} width={barW} height={h} fill={fill} rx={6} />
                   <text x={cx(i)} y={base - h - 16} textAnchor="middle" fontSize={font} fontWeight={700} fill={ink} opacity={Math.min(1, grow * 4)} style={{ fontVariantNumeric: "tabular-nums" }}>
                     {valueText(panel, b, grow)}
                   </text>
-                  <text x={cx(i)} y={base + 36} textAnchor="middle" fontSize={nameSize} fontWeight={700} fill={ink}>
+                  <text x={cx(i)} y={base + 36 + logoH} textAnchor="middle" fontSize={nameSize} fontWeight={700} fill={ink}>
                     {name.map((l, k) => (
                       <tspan key={k} x={cx(i)} dy={k ? nameSize * 1.15 : 0}>
                         {l}
@@ -245,14 +257,14 @@ const VerticalPanel: React.FC<{ props: StatBarsProps; panel: Panel; pi: number }
                     ))}
                   </text>
                   {b.sub && (
-                    <text x={cx(i)} y={base + 36 + name.length * nameSize * 1.15 + 2} textAnchor="middle" fontSize={nameSize - 4} fill={subInk}>
+                    <text x={cx(i)} y={base + 36 + logoH + name.length * nameSize * 1.15 + 2} textAnchor="middle" fontSize={nameSize - 4} fill={subInk}>
                       {b.sub}
                     </text>
                   )}
                 </g>
               );
             })}
-            <line x1={0} x2={W} y1={base} y2={base} stroke={p.ink2} strokeWidth={2} />
+            <line x1={0} x2={W} y1={base} y2={base} stroke={p.rule} strokeWidth={2} />
             {anns.map(({ a, at }, k) => {
               if (a.type === "ring") {
                 const vw = textW(valueText(panel, bars[a.bar].b, 1), font);
@@ -278,6 +290,10 @@ const VerticalPanel: React.FC<{ props: StatBarsProps; panel: Panel; pi: number }
             })}
           </svg>
         )}
+        {W > 0 &&
+          bars.map(({ logo, logoOpacity, grow }, i) =>
+            logo ? <Logo key={i} src={logo} x={cx(i)} y={base + 14 + logoSize / 2} size={logoSize} opacity={logoOpacity * Math.min(1, grow * 3 + 0.4)} /> : null,
+          )}
       </div>
     </div>
   );
@@ -293,7 +309,7 @@ export const StatBars: React.FC<StatBarsProps> = (props) => {
       <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: stacked ? "column" : "row", gap: 56 }}>
         {props.panels.map((panel, i) => (
           <React.Fragment key={i}>
-            {i > 0 && <div style={{ [stacked ? "height" : "width"]: 1.5, background: p.rule, flexShrink: 0 }} />}
+            {i > 0 && <div style={{ [stacked ? "height" : "width"]: 1, background: p.border, flexShrink: 0 }} />}
             {horizontal ? <HorizontalPanel props={props} panel={panel} pi={i} /> : <VerticalPanel props={props} panel={panel} pi={i} />}
           </React.Fragment>
         ))}

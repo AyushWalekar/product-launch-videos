@@ -3,7 +3,8 @@ import { spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { Frame, mathFrames, type Callout } from "./Frame";
 import { PEN_FRAMES, PenStroke, PenText, ringPath } from "./pen";
 import { formatTick, type ValueFormat } from "./format";
-import { fonts, labColor, palette as p, type Aspect } from "./theme";
+import { Logo } from "./logo";
+import { fonts, labColor, logoFor, palette as p, type Aspect } from "./theme";
 import { logTicks, niceTicks, useSize } from "./useSize";
 
 export type Point = {
@@ -13,6 +14,8 @@ export type Point = {
   color?: string;
   lab?: string;
   focus?: boolean;
+  /** Logo file in public/logos, or false for none. Default: matched from label, then lab. */
+  logo?: string | false;
   /** Label this point even when it isn't a focus point. */
   showLabel?: boolean;
   /** Which side of the dot the label sits on when the default (right) collides. */
@@ -85,7 +88,9 @@ export const StatScatter: React.FC<StatScatterProps> = (props) => {
   const hasFocus = pts.some((q) => q.focus);
   const labels = spring({ frame: frame - tm.labelsAt, fps, config: { damping: 200 }, durationInFrames: 12 });
 
+  const marks: { x: number; y: number; src: string; size: number; o: number }[] = [];
   return (
+    // label logos, collected while drawing the points and laid over the SVG
     <Frame {...props} calloutAt={tm.calloutAt} mathAt={tm.mathAt}>
       <div ref={ref} style={{ position: "absolute", inset: 0 }}>
         {size.width > 0 && (
@@ -113,19 +118,23 @@ export const StatScatter: React.FC<StatScatterProps> = (props) => {
             {props.frontier && frontier.length > 1 && <PenStroke d={fPath} at={tm.frontierAt} width={3} />}
             {order.map((q, i) => {
               const s = spring({ frame: frame - START - i * tm.step, fps, config: { damping: 12, stiffness: 200, mass: 0.6 } });
-              const color = hasFocus && !q.focus ? "#B9B2A4" : props.colors === "lab" ? q.color ?? labColor(q.lab) : p.ink;
+              const color = hasFocus && !q.focus ? p.muted : props.colors === "lab" ? q.color ?? labColor(q.lab) : p.ink;
               const cx = X(q.x), cy = Y(q.y);
               const show = q.focus || q.showLabel || (!hasFocus && pts.length <= 10);
               const side = q.labelSide ?? (cx > L + W * 0.8 ? "left" : "right");
               const gap = q.ring ? 22 : 0; // clear the pen loop drawn around ringed points
               const lx = side === "left" ? cx - 18 - gap : side === "right" ? cx + 18 + gap : cx;
               const ly = side === "above" ? cy - 22 - gap : side === "below" ? cy + 36 + gap : cy + 8;
+              const logo = show && (side === "left" || side === "right") ? logoFor(q.label, q.lab, q.logo) : null;
+              const ls = q.focus ? 28 : 24;
+              if (logo) marks.push({ x: side === "right" ? lx + ls / 2 : lx - ls / 2, y: ly - 8, src: logo, size: ls, o: labels * (q.focus || !hasFocus ? 1 : 0.6) });
+              const tx = logo ? (side === "right" ? lx + ls + 8 : lx - ls - 8) : lx;
               const anchor = side === "left" ? "end" : side === "right" ? "start" : "middle";
               return (
                 <g key={q.label}>
-                  <circle cx={cx} cy={cy} r={(q.focus ? 13 : 10) * s} fill={color} stroke={p.paper} strokeWidth={3} />
+                  <circle cx={cx} cy={cy} r={(q.focus ? 13 : 10) * s} fill={color} stroke={p.card} strokeWidth={3} />
                   {show && (
-                    <text x={lx} y={ly} textAnchor={anchor} fontSize={q.focus ? 25 : 21} fontWeight={q.focus ? 700 : 500} fill={q.focus ? p.ink : p.ink2} opacity={labels}>
+                    <text x={tx} y={ly} textAnchor={anchor} fontSize={q.focus ? 25 : 21} fontWeight={q.focus ? 700 : 500} fill={q.focus ? p.ink : p.ink2} opacity={labels}>
                       {q.label}
                     </text>
                   )}
@@ -156,6 +165,9 @@ export const StatScatter: React.FC<StatScatterProps> = (props) => {
               })}
           </svg>
         )}
+        {marks.map((m, k) => (
+          <Logo key={k} src={m.src} x={m.x} y={m.y} size={m.size} opacity={m.o} />
+        ))}
       </div>
     </Frame>
   );

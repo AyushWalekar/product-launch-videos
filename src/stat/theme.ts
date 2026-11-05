@@ -1,58 +1,109 @@
-// Visual system for stat clips: the same ink-on-paper look as Ayush's article figures
-// (articles/scripts/lib/graphics.mjs), sized for X's feed (1080 px wide, read at ~500 px on a phone).
-// Model bars take their lab's colour; everything else is ink, paper, hairlines and one vermilion accent.
+// Visual system for stat clips: a dark, Vercel/Geist-style look sized for X's feed (1080 px wide, read at
+// ~500 px on a phone). Near-black canvas, bordered cards, Geist type, white focus bars, grey context bars and
+// one blue accent for the pen marks and the math result. Model rows carry their official logo.
+import { staticFile } from "remotion";
+import { loadFont as loadGeist } from "@remotion/google-fonts/Geist";
+import { loadFont as loadGeistMono } from "@remotion/google-fonts/GeistMono";
+
+loadGeist("normal", { weights: ["400", "500", "600", "700"], subsets: ["latin"] });
+loadGeistMono("normal", { weights: ["400", "500", "700"], subsets: ["latin"] });
 
 export const palette = {
-  paper: "#F7F4EE",
-  panel: "#FFFDF8",
-  ink: "#1C1B19",
-  ink2: "#4A4740",
-  muted: "#857F73",
-  rule: "#D9D3C5",
-  tint: "#E4DFD3",
-  red: "#D2462A",
-  blue: "#1F5FA8",
+  /** canvas */
+  bg: "#0A0A0A",
+  /** cards (chart, math strip) */
+  card: "#111111",
+  /** 1px card borders and hairlines */
+  border: "#242424",
+  /** primary text and focus bars */
+  ink: "#EDEDED",
+  /** secondary text */
+  ink2: "#A1A1A1",
+  /** tertiary text, context labels */
+  muted: "#6E6E6E",
+  /** axis rules and dividers */
+  rule: "#2E2E2E",
+  /** context bars, dimmed lines and points */
+  context: "#2F2F2F",
+  /** the pen: rings, brackets, reference lines, math result */
+  accent: "#3B9EFF",
+  /** faint accent fill behind the math result */
+  accentSoft: "rgba(59,158,255,0.12)",
 };
 
-// macOS system fonts, matching the article figures.
 export const fonts = {
-  serif: "Charter, 'Iowan Old Style', Georgia, serif",
-  sans: "'Avenir Next', Avenir, 'Helvetica Neue', Arial, sans-serif",
-  mono: "Menlo, 'SF Mono', Consolas, monospace",
+  sans: "Geist, -apple-system, 'Helvetica Neue', Arial, sans-serif",
+  mono: "'Geist Mono', ui-monospace, Menlo, monospace",
 };
 
 export const CREDIT = "@_ayushwalekar";
 
-// Lab colours as Artificial Analysis draws them, for data that doesn't carry its own colour.
+// Lab colours (tuned for a dark canvas), for `colors: "lab"`.
 export const LAB_COLORS: Record<string, string> = {
-  anthropic: "#cc785c",
-  openai: "#1f1f1f",
-  google: "#34A853",
+  anthropic: "#D97757",
+  openai: "#EDEDED",
+  google: "#4285F4",
   meta: "#0089f4",
-  deepseek: "#2243e6",
-  kimi: "#047AFE",
-  moonshot: "#047AFE",
-  xai: "#736cd3",
-  spacexai: "#736cd3",
-  mistral: "#fa520f",
-  alibaba: "#615ced",
-  qwen: "#615ced",
-  xiaomi: "#ff6900",
-  zhipu: "#1c7ff8",
-  "z ai": "#1c7ff8",
-  minimax: "#e2167e",
-  nvidia: "#76b900",
+  deepseek: "#4D6BFE",
+  kimi: "#3B8CFF",
+  moonshot: "#3B8CFF",
+  xai: "#A8A2F0",
+  spacexai: "#A8A2F0",
+  mistral: "#FA520F",
+  alibaba: "#7C76F5",
+  qwen: "#7C76F5",
+  xiaomi: "#FF6900",
+  zhipu: "#3B8CF8",
+  "z ai": "#3B8CF8",
+  minimax: "#F23F8A",
+  nvidia: "#76B900",
 };
 
 export const labColor = (lab?: string, fallback = palette.ink2) =>
   (lab && LAB_COLORS[lab.toLowerCase()]) || fallback;
 
-/** Very dark lab colours (OpenAI) need light value text inside the bar; light ones need ink. */
+/** Light fills need dark text inside them; dark ones need light text. */
 export const textOn = (hex: string) => {
   const n = parseInt(hex.replace("#", "").slice(0, 6), 16);
   const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-  return 0.299 * r + 0.587 * g + 0.114 * b > 160 ? palette.ink : "#FFFFFF";
+  return 0.299 * r + 0.587 * g + 0.114 * b > 160 ? palette.bg : "#FFFFFF";
 };
+
+// Official marks in src/stat/public/logos (from @lobehub/icons-static-svg 1.99.0; mono marks recoloured #EDEDED).
+// The model's own mark when it has one (Claude, Gemini, Kimi, Qwen, Grok…), otherwise the lab's.
+const LOGO_RULES: [RegExp, string][] = [
+  [/claude|opus|sonnet|haiku|fable/i, "claude-color"],
+  [/gemini|gemma|\bcarbon\b/i, "gemini-color"],
+  [/\bgpt|\bo[134]\b|openai|codex|\b(sol|astra|terra|luna)\b/i, "openai"],
+  [/deepseek/i, "deepseek-color"],
+  [/\bkimi\b/i, "kimi-color"],
+  [/moonshot/i, "moonshot"],
+  [/qwen|alibaba/i, "qwen-color"],
+  [/\bgrok\b/i, "grok"],
+  [/\bxai\b|spacexai/i, "xai"],
+  [/mistral|devstral|magistral|codestral/i, "mistral-color"],
+  [/llama|\bmeta\b/i, "meta-color"],
+  [/\bglm\b|zhipu|\bz ai\b/i, "zhipu-color"],
+  [/minimax/i, "minimax-color"],
+  [/nemotron|nvidia/i, "nvidia-color"],
+  [/\bmimo\b|xiaomi/i, "xiaomimimo"],
+  [/anthropic/i, "anthropic"],
+  [/google/i, "google-color"],
+];
+
+/**
+ * Logo URL for a row. `logo` overrides: a file name in public/logos ("claude-color"), or false for none.
+ * Otherwise matched from the label, then the lab.
+ */
+export function logoFor(label?: string, lab?: string, logo?: string | false): string | null {
+  if (logo === false) return null;
+  if (logo) return staticFile(`logos/${logo.replace(/\.svg$/, "")}.svg`);
+  for (const s of [label, lab]) {
+    if (!s) continue;
+    for (const [re, file] of LOGO_RULES) if (re.test(s)) return staticFile(`logos/${file}.svg`);
+  }
+  return null;
+}
 
 export const ASPECTS = {
   square: { width: 1080, height: 1080 },

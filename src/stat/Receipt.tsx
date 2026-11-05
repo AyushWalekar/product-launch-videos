@@ -5,7 +5,7 @@ import { CREDIT, fonts, palette as p, type Aspect } from "./theme";
 // "Benchmark Receipt #N": a recurring card for the occasional series. A narrow printed slip: header,
 // itemised lines that print one by one, a rule, then the verdict. No chart.
 
-export type ReceiptLine = { label: string; value: string; /** Set the value in vermilion. */ em?: boolean };
+export type ReceiptLine = { label: string; value: string; /** Set the value in the accent colour. */ em?: boolean };
 
 export type StatReceiptProps = {
   aspect: Aspect;
@@ -43,13 +43,13 @@ export const StatReceipt: React.FC<StatReceiptProps> = (props) => {
   const big = height > 1200;
 
   return (
-    <AbsoluteFill style={{ background: p.paper, color: p.ink, fontFamily: fonts.mono, padding: 64, display: "flex", flexDirection: "column", alignItems: "center" }}>
+    <AbsoluteFill style={{ background: p.bg, color: p.ink, fontFamily: fonts.mono, padding: 64, display: "flex", flexDirection: "column", alignItems: "center" }}>
       <div style={{ flex: 1, width: "100%", maxWidth: 820, display: "flex", flexDirection: "column", justifyContent: "center" }}>
         <div style={{ opacity: intro, transform: `translateY(${(1 - intro) * 12}px)` }}>
-          <div style={{ fontSize: 22, letterSpacing: 3, color: p.red, textTransform: "uppercase" }}>
+          <div style={{ fontSize: 22, letterSpacing: 3, color: p.accent, textTransform: "uppercase" }}>
             {props.series ?? "Benchmark Receipt"} #{props.number}
           </div>
-          <div style={{ fontFamily: fonts.serif, fontSize: big ? 64 : 56, fontWeight: 600, lineHeight: 1.08, marginTop: 16, letterSpacing: -0.5 }}>{props.topic}</div>
+          <div style={{ fontSize: big ? 64 : 56, fontWeight: 600, lineHeight: 1.08, marginTop: 16, letterSpacing: -2, fontFamily: fonts.sans }}>{props.topic}</div>
           <div style={{ fontSize: 22, color: p.muted, marginTop: 12 }}>{props.dated}</div>
         </div>
         <Rule dashed />
@@ -60,14 +60,14 @@ export const StatReceipt: React.FC<StatReceiptProps> = (props) => {
             <div key={i} style={{ display: "flex", alignItems: "baseline", gap: 14, fontSize: big ? 32 : 29, lineHeight: 1.25, padding: "11px 0", opacity: o, transform: `translateY(${(1 - o) * -8}px)` }}>
               <span style={{ color: p.ink2, whiteSpace: "nowrap" }}>{l.label}</span>
               <span style={{ flex: 1, borderBottom: `2px dotted ${p.rule}`, transform: "translateY(-6px)" }} />
-              <span style={{ fontWeight: 700, color: l.em ? p.red : p.ink, whiteSpace: "nowrap" }}>{l.value}</span>
+              <span style={{ fontWeight: 700, color: l.em ? p.accent : p.ink, whiteSpace: "nowrap" }}>{l.value}</span>
             </div>
           );
         })}
         <Rule />
         <div style={{ opacity: verdict, transform: `translateY(${(1 - verdict) * 10}px)` }}>
-          <div style={{ fontSize: 22, letterSpacing: 3, color: p.red }}>VERDICT</div>
-          <div style={{ fontFamily: fonts.serif, fontSize: big ? 46 : 40, lineHeight: 1.2, fontWeight: 600, marginTop: 12 }}>{props.verdict}</div>
+          <div style={{ fontSize: 22, letterSpacing: 3, color: p.accent }}>VERDICT</div>
+          <div style={{ fontSize: big ? 46 : 40, lineHeight: 1.2, fontWeight: 600, marginTop: 12, fontFamily: fonts.sans, letterSpacing: -1 }}>{props.verdict}</div>
         </div>
       </div>
       <div

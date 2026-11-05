@@ -8,12 +8,12 @@ export type FrameProps = {
   kicker?: string;
   title: string;
   subtitle?: string;
-  /** Short result that lands last, top right in vermilion (e.g. "1.3 tasks"). Optional: the math strip usually carries it. */
+  /** Short result that lands last, top right in the accent colour (e.g. "1.3 tasks"). Optional: the math strip usually carries it. */
   callout?: Callout;
   calloutAt?: number;
   /**
    * The worked arithmetic behind the post, typed out under the chart, one line after another.
-   * Wrap the result in [[ ]] to set it in vermilion: "2.0 pts × 66 tasks = [[1.3 tasks]]".
+   * Wrap the result in [[ ]] to set it in the accent colour: "2.0 pts × 66 tasks = [[1.3 tasks]]".
    */
   math?: string[];
   mathAt?: number;
@@ -23,7 +23,24 @@ export type FrameProps = {
   children: React.ReactNode;
 };
 
-const PAD = 64;
+const PAD = 56;
+const CARD_PAD = 32;
+
+/** Vercel-style canvas: a faint grid that fades out from the top, and a soft glow behind the title. */
+const Backdrop: React.FC = () => (
+  <AbsoluteFill style={{ pointerEvents: "none" }}>
+    <AbsoluteFill
+      style={{
+        backgroundImage: `linear-gradient(${p.border} 1px, transparent 1px), linear-gradient(90deg, ${p.border} 1px, transparent 1px)`,
+        backgroundSize: "56px 56px",
+        opacity: 0.45,
+        maskImage: "radial-gradient(ellipse 90% 55% at 50% 0%, black 0%, transparent 75%)",
+        WebkitMaskImage: "radial-gradient(ellipse 90% 55% at 50% 0%, black 0%, transparent 75%)",
+      }}
+    />
+    <AbsoluteFill style={{ background: "radial-gradient(ellipse 60% 30% at 20% 0%, rgba(59,158,255,0.10), transparent 70%)" }} />
+  </AbsoluteFill>
+);
 const CHARS_PER_FRAME = 1.6;
 
 /** Frames the math strip needs to type out (plus a beat between lines). */
@@ -38,7 +55,7 @@ const MathStrip: React.FC<{ math: string[]; at: number }> = ({ math, at }) => {
   const frame = useCurrentFrame();
   let start = at;
   return (
-    <div style={{ borderTop: `1.5px solid ${p.rule}`, paddingTop: 16, marginBottom: 18, fontFamily: fonts.mono, fontSize: 27, lineHeight: 1.55, color: p.ink }}>
+    <div style={{ background: p.card, border: `1px solid ${p.border}`, borderRadius: 14, padding: "18px 26px", marginBottom: 22, fontFamily: fonts.mono, fontSize: 26, lineHeight: 1.6, color: p.ink }}>
       {math.map((line, i) => {
         const segs = segments(line);
         const total = segs.reduce((n, s) => n + s.text.length, 0);
@@ -52,12 +69,12 @@ const MathStrip: React.FC<{ math: string[]; at: number }> = ({ math, at }) => {
               const part = s.text.slice(0, Math.max(0, left));
               left -= s.text.length;
               return (
-                <span key={k} style={s.em ? { color: p.red, fontWeight: 700 } : undefined}>
+                <span key={k} style={s.em ? { color: p.accent, fontWeight: 700, background: part ? p.accentSoft : undefined, borderRadius: 6, padding: part ? "1px 6px" : 0 } : undefined}>
                   {part}
                 </span>
               );
             })}
-            {typing && <span style={{ display: "inline-block", width: 14, height: 28, background: p.red, verticalAlign: -4, marginLeft: 2 }} />}
+            {typing && <span style={{ display: "inline-block", width: 14, height: 28, background: p.accent, verticalAlign: -4, marginLeft: 2 }} />}
           </div>
         );
       })}
@@ -74,27 +91,31 @@ export const Frame: React.FC<FrameProps> = ({ kicker, title, subtitle, callout, 
   const titleSize = width >= 1500 ? 60 : title.length > 52 ? 46 : 54;
 
   return (
-    <AbsoluteFill style={{ background: p.paper, color: p.ink, fontFamily: fonts.sans, padding: PAD, display: "flex", flexDirection: "column" }}>
+    <AbsoluteFill style={{ background: p.bg, color: p.ink, fontFamily: fonts.sans, padding: PAD, display: "flex", flexDirection: "column" }}>
+      <Backdrop />
       <div style={{ display: "flex", alignItems: "flex-start", gap: 32, opacity: intro, transform: `translateY(${(1 - intro) * 14}px)` }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           {kicker && (
-            <div style={{ fontFamily: fonts.mono, fontSize: 20, letterSpacing: 2.5, textTransform: "uppercase", color: p.red, marginBottom: 18 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 12, fontFamily: fonts.mono, fontSize: 19, letterSpacing: 1.5, textTransform: "uppercase", color: p.ink2, border: `1px solid ${p.border}`, background: p.card, borderRadius: 999, padding: "8px 18px", marginBottom: 22 }}>
+              <span style={{ width: 9, height: 9, borderRadius: 9, background: p.accent, boxShadow: `0 0 12px ${p.accent}` }} />
               {kicker}
             </div>
           )}
-          <div style={{ fontFamily: fonts.serif, fontSize: titleSize, lineHeight: 1.12, fontWeight: 600, letterSpacing: -0.5 }}>{title}</div>
-          {subtitle && <div style={{ fontSize: 27, lineHeight: 1.35, color: p.ink2, marginTop: 14 }}>{subtitle}</div>}
+          <div style={{ fontSize: titleSize, lineHeight: 1.08, fontWeight: 600, letterSpacing: -titleSize * 0.022 }}>{title}</div>
+          {subtitle && <div style={{ fontSize: 26, lineHeight: 1.4, color: p.ink2, marginTop: 14 }}>{subtitle}</div>}
         </div>
         {callout && (
           <div style={{ textAlign: "right", maxWidth: "34%", opacity: pop, transform: `translateY(${(1 - pop) * 10}px)` }}>
-            <div style={{ fontFamily: fonts.serif, fontSize: callout.text.length > 6 ? 60 : 88, lineHeight: 0.95, fontWeight: 700, color: p.red }}>
+            <div style={{ fontSize: callout.text.length > 6 ? 60 : 88, lineHeight: 0.95, fontWeight: 700, letterSpacing: -2, color: p.accent }}>
               {callout.text}
             </div>
             {callout.sub && <div style={{ fontSize: 24, lineHeight: 1.3, color: p.ink2, marginTop: 10 }}>{callout.sub}</div>}
           </div>
         )}
       </div>
-      <div style={{ flex: 1, position: "relative", marginTop: 36, marginBottom: 24 }}>{children}</div>
+      <div style={{ flex: 1, position: "relative", marginTop: 32, marginBottom: 22, background: p.card, border: `1px solid ${p.border}`, borderRadius: 16 }}>
+        <div style={{ position: "absolute", inset: CARD_PAD }}>{children}</div>
+      </div>
       {math && math.length > 0 && <MathStrip math={math} at={mathAt} />}
       <div
         style={{
@@ -102,9 +123,7 @@ export const Frame: React.FC<FrameProps> = ({ kicker, title, subtitle, callout, 
           justifyContent: "space-between",
           alignItems: "flex-end",
           gap: 24,
-          borderTop: `1.5px solid ${p.rule}`,
-          paddingTop: 18,
-          fontSize: 20,
+          fontSize: 19,
           lineHeight: 1.4,
           color: p.muted,
           opacity: interpolate(intro, [0, 1], [0, 1]),

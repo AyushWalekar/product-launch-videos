@@ -3,7 +3,7 @@ import { interpolate, useCurrentFrame } from "remotion";
 import { evolvePath } from "@remotion/paths";
 import { palette as p } from "./theme";
 
-// The vermilion "pen": marks drawn onto a finished chart, one stroke at a time, like annotating a printout.
+// The accent "pen": marks drawn onto a finished chart, one stroke at a time, like annotating a printout.
 
 export const PEN_FRAMES = 16;
 
@@ -38,10 +38,10 @@ export const PenStroke: React.FC<{ d: string; at: number; width?: number; dash?:
     easing: (t) => 1 - Math.pow(1 - t, 2),
   });
   if (prog <= 0) return null;
-  if (dash) return <path d={d} fill="none" stroke={p.red} strokeWidth={width} strokeDasharray={dash} opacity={prog} />;
+  if (dash) return <path d={d} fill="none" stroke={p.accent} strokeWidth={width} strokeDasharray={dash} opacity={prog} />;
   const ev = evolvePath(prog, d);
   return (
-    <path d={d} fill="none" stroke={p.red} strokeWidth={width} strokeLinecap="round" strokeLinejoin="round" strokeDasharray={ev.strokeDasharray} strokeDashoffset={ev.strokeDashoffset} />
+    <path d={d} fill="none" stroke={p.accent} strokeWidth={width} strokeLinecap="round" strokeLinejoin="round" strokeDasharray={ev.strokeDasharray} strokeDashoffset={ev.strokeDashoffset} />
   );
 };
 
@@ -58,7 +58,7 @@ export const PenText: React.FC<{ x: number; y: number; text: string; at: number;
   const o = interpolate(frame, [at + PEN_FRAMES * 0.6, at + PEN_FRAMES + 4], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   const lines = text.split("\n");
   return (
-    <text x={x} y={y} textAnchor={anchor} fontSize={size} fontWeight={700} fill={p.red} opacity={o}>
+    <text x={x} y={y} textAnchor={anchor} fontSize={size} fontWeight={700} fill={p.accent} opacity={o}>
       {lines.map((l, i) => (
         <tspan key={i} x={x} dy={i === 0 ? 0 : size * 1.2}>
           {l}
